@@ -1,0 +1,129 @@
+---
+title: An R Markdown document converted from "As03.ipynb"
+output: html_document
+---
+
+# Assignment 03: Data Cleaning and Formatting
+
+This notebook processes three datasets from the CIA World Factbook:
+1. Maternal mortality ratio
+2. Infant mortality rate  
+3. Life expectancy at birth
+
+For each dataset, we will:
+- Keep only 3 columns: country name, the variable, and region
+- Clean and format the data
+- Save as both RDS and CSV formats
+- Verify data types from both formats
+
+```{r}
+github_base <- "https://raw.githubusercontent.com/FundamentalsChinmai/Hw03/refs/heads/main/data/"  # GitHub repository base URL for raw files
+```
+
+## 1. Maternal Mortality Ratio
+
+```{r}
+maternal_url <- paste0(github_base, URLencode("Maternal mortality ratio.csv", reserved = TRUE))  # Construct URL for maternal mortality ratio data file
+maternal_raw <- read.csv(maternal_url, na.strings = c("", "NA"), check.names = FALSE)  # Read CSV file from GitHub URL, treating empty strings and "NA" as missing values; check.names=FALSE preserves original column names
+```
+
+```{r}
+maternal_mortality_value <- maternal_raw[, 3]  # Extract the numeric mortality value from column 3 (column 4 contains "000 live births" unit text)
+maternal <- data.frame(
+  country = maternal_raw[, 1],              # Country name from column 1
+  maternal_mortality = maternal_mortality_value,  # Mortality ratio value from column 3
+  region = maternal_raw[, 6]                # Region from column 6 (labeled "ranking" but contains region data; column 7 is empty)
+)
+```
+
+```{r}
+maternal$country <- trimws(maternal$country)  # Clean country names: remove leading/trailing whitespace
+maternal$country <- toupper(maternal$country)  # Convert country names to uppercase for consistency
+maternal$maternal_mortality <- as.numeric(maternal$maternal_mortality)  # Convert mortality ratio to numeric type (ensures proper numeric formatting)
+maternal$region <- trimws(maternal$region)  # Clean region: remove leading/trailing whitespace
+maternal$region <- as.factor(maternal$region)  # Convert region to factor (categorical data type)
+rownames(maternal) <- NULL  # Reset row names to sequential numbers starting from 1
+```
+
+```{r}
+saveRDS(maternal, "maternal_mortality_ratio.RDS")  # Save cleaned data as RDS format (preserves R data types including factors)
+write.csv(maternal, "maternal_mortality_ratio.csv", row.names = FALSE)  # Save cleaned data as CSV format (portable format, but factors become characters)
+```
+
+```{r}
+maternal_rds <- readRDS("maternal_mortality_ratio.RDS")  # Verify data types from RDS format (read back the saved RDS file)
+str(maternal_rds)  # Display structure to verify data types preserved in RDS format
+maternal_csv <- read.csv("maternal_mortality_ratio.csv")  # Verify data types from CSV format (read back the saved CSV file)
+str(maternal_csv)  # Display structure to verify data types in CSV format
+```
+
+## 2. Infant Mortality Rate
+
+```{r}
+infant_url <- paste0(github_base, URLencode("Infant mortality rate.csv", reserved = TRUE))  # Construct URL for infant mortality rate data file
+infant_raw <- read.csv(infant_url, na.strings = c("", "NA"), check.names = FALSE)  # Read CSV file from GitHub URL, treating empty strings and "NA" as missing values; check.names=FALSE preserves original column names
+```
+
+```{r}
+infant_mortality_value <- infant_raw[, 3]  # Extract the numeric mortality value from column 3 (column 4 contains "000 live births" unit text)
+infant <- data.frame(
+  country = infant_raw[, 1],              # Country name from column 1
+  infant_mortality = infant_mortality_value,  # Mortality rate value from column 3
+  region = infant_raw[, 6]                # Region from column 6 (labeled "ranking" but contains region data; column 7 is empty)
+)
+```
+
+```{r}
+infant$country <- trimws(infant$country)  # Clean country names: remove leading/trailing whitespace
+infant$country <- toupper(infant$country)  # Convert country names to uppercase for consistency
+infant$infant_mortality <- as.numeric(infant$infant_mortality)  # Convert mortality rate to numeric type (handles decimal values)
+infant$region <- trimws(infant$region)  # Clean region: remove leading/trailing whitespace
+infant$region <- as.factor(infant$region)  # Convert region to factor (categorical data type)
+rownames(infant) <- NULL  # Reset row names to sequential numbers starting from 1
+```
+
+```{r}
+saveRDS(infant, "infant_mortality_rate.RDS")  # Save cleaned data as RDS format (preserves R data types including factors)
+write.csv(infant, "infant_mortality_rate.csv", row.names = FALSE)  # Save cleaned data as CSV format (portable format, but factors become characters)
+```
+
+```{r}
+infant_rds <- readRDS("infant_mortality_rate.RDS")  # Verify data types from RDS format (read back the saved RDS file)
+str(infant_rds)  # Display structure to verify data types preserved in RDS format
+infant_csv <- read.csv("infant_mortality_rate.csv")  # Verify data types from CSV format (read back the saved CSV file)
+str(infant_csv)  # Display structure to verify data types in CSV format
+```
+
+## 3. Life Expectancy at Birth
+
+```{r}
+life_url <- paste0(github_base, URLencode("Life expectancy at birth.csv", reserved = TRUE))  # Construct URL for life expectancy at birth data file
+life_raw <- read.csv(life_url, na.strings = c("", "NA"), check.names = FALSE)  # Read CSV file from GitHub URL, treating empty strings and "NA" as missing values; check.names=FALSE preserves original column names
+```
+
+```{r}
+life <- life_raw[, c(1, 3, 6)]  # Select only 3 required columns: country (col 1), life expectancy (col 3), and region (col 6); using column positions to avoid issues with special characters
+names(life) <- c("country", "life_expectancy", "region")  # Rename columns for clarity
+```
+
+```{r}
+life$country <- trimws(life$country)  # Clean country names: remove leading/trailing whitespace
+life$country <- toupper(life$country)  # Convert country names to uppercase for consistency
+life$life_expectancy <- as.numeric(life$life_expectancy)  # Convert life expectancy to numeric type (handles decimal values)
+life$region <- trimws(life$region)  # Clean region: remove leading/trailing whitespace
+life$region <- as.factor(life$region)  # Convert region to factor (categorical data type)
+rownames(life) <- NULL  # Reset row names to sequential numbers starting from 1
+```
+
+```{r}
+saveRDS(life, "life_expectancy_at_birth.RDS")  # Save cleaned data as RDS format (preserves R data types including factors)
+write.csv(life, "life_expectancy_at_birth.csv", row.names = FALSE)  # Save cleaned data as CSV format (portable format, but factors become characters)
+```
+
+```{r}
+life_rds <- readRDS("life_expectancy_at_birth.RDS")  # Verify data types from RDS format (read back the saved RDS file)
+str(life_rds)  # Display structure to verify data types preserved in RDS format
+life_csv <- read.csv("life_expectancy_at_birth.csv")  # Verify data types from CSV format (read back the saved CSV file)
+str(life_csv)  # Display structure to verify data types in CSV format
+```
+
